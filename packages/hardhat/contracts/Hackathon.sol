@@ -1,95 +1,161 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
-pragma experimental ABIEncoderV2;
 
-import "./@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-error DepositFailed();
-error WithdrawFailed();
-error NotEnoughEther();
-error NotEnoughTokens();
+import "./@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./interfaces/IWETH.sol";
 
 /**
     @title ETH Dubai -- Hackathon contract
     @notice Simple Permissionless Hackathon contract where sponsors
             can deposit any token and rewards them to any address on withdraw
 **/
-contract Hackathon {
+contract Hackathon is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
+
+    /***********
+     * Varibles
+     ***********/
+
+    // address of the owner
     address public immutable owner;
 
-    //keeps track of amount deposited by each sponsor for a specific token
-    // mapping(sponsor => mapping(erc20 => amount))
-    mapping(address => mapping(address => uint256)) public sponsorsTokens;
+    address public immutable native;
 
-    //keeps track of each ETH deposited by each sponsor
-    // mapping(sponsor => amount)
-    mapping(address => uint256) public sponsorsETH;
+    /***********
+     * Modifiers
+     ***********/
 
-    constructor() {
-        owner = payable(msg.sender);
+    modifier onlyOwner() {
+        require(address(msg.sender) == owner, "!owner");
+        _;
     }
 
-    /// @notice Allow anyone to deposit some native tokens
-    function depositETH() public payable {
-        sponsorsETH[msg.sender] += msg.value;
+    /**********
+     * Mappings
+     **********/
+
+    /// @notice keeps track of amount deposited by each sponsor for a specific token
+    /// @dev mapping(sponsor => mapping(erc20 => amount))
+    mapping(address => mapping(address => uint256)) public sponsorsTokens;
+
+    /// @notice keep track of verified sponsors set by owner
+    /// @dev mapping(sponsor => is verified boolean)
+    mapping(address => bool) public verifiedSponsors;
+
+    /**********
+     * Events
+     **********/
+
+    event Deposit(address indexed token, uint256 amount);
+    event Withdraw(
+        address indexed token,
+        uint256 amount,
+        address indexed winner
+    );
+    event SetVerifiedSponsor(address indexed sponsor, bool status);
+
+    /**********
+     * Views
+     **********/
+
+    /***
+     * @notice Check token balance held by this contract
+     */
+    function tokenBalance(address _token) public view returns (uint256) {
+        return IERC20(_token).balanceOf(address(this));
+    }
+
+    /************
+     * Functions
+     ************/
+
+    constructor(address _native) {
+        owner = address(msg.sender);
+        native = _native;
     }
 
     /// @notice Native way to receive some ETHs
-    receive() external payable {
-        depositETH();
-    }
+    receive() external payable {}
 
-    /**
-        @notice Allow anyone to deposit any ERC20 tokens
-        This function will be called by sponsors to deposit some tokens into the contract
-        @param erc20 The address of the ERC20 token to be deposited
-        @param amount The amount of tokens to be deposited
-    **/
-    function depositToken(address erc20, uint256 amount) external payable {
-        sponsorsTokens[msg.sender][erc20] += amount;
+    /***
+     * @notice Allow anyone to deposit any ERC20 tokens
+     * This function will be called by sponsors to deposit some tokens into the contract
+     * @param _token The address of the ERC20 token to be deposited
+     * @param _amount The amount of tokens to be deposited
+     **/
+    function deposit(address _token, uint256 _amount)
+        public
+        payable
+        nonReentrant
+    {
+        uint256 _before = tokenBalance(_token);
 
-        ERC20 withdrawingToken = ERC20(erc20);
-
-        if (!withdrawingToken.transferFrom(msg.sender, address(this), amount))
-            revert DepositFailed();
-    }
-
-    /** 
-        @notice Allow sponsors to reward winner using some native tokens. 
-        This function will be called by sponsors to reward winners with some native tokens
-        @param winner The address of the winner to be rewarded
-        @param amount The amount of native tokens to be rewarded
-    **/
-    function withdraw(address payable winner, uint256 amount) external payable {
-        if (amount > sponsorsETH[msg.sender]) revert NotEnoughEther();
-
-        /* As the amount is checked to be lower than the amount of ETH the sender has,
-           this value won't underflow. */
-        unchecked {
-            sponsorsETH[msg.sender] -= amount;
+        if (_token == native) {
+            IWETH(native).deposit{value: msg.value}();
+        } else {
+            IERC20(_token).safeTransferFrom(
+                address(msg.sender),
+                address(this),
+                _amount
+            );
         }
 
-        (bool ok, ) = winner.call{value: amount}("");
-        if (!ok) revert WithdrawFailed();
+        // Check for deflationary tokens
+        _amount = tokenBalance(_token).sub(_before);
+
+        sponsorsTokens[msg.sender][_token] += _amount;
+
+        emit Deposit(_token, _amount);
     }
 
-    /** 
-        @notice Allow sponsors to reward winner using some ERC20 tokens. 
-        This function will be called by sponsors to reward winners with some ERC20 tokens
-        @param winner The address of the winner to be rewarded
-        @param amount The amount of ERC20 tokens to be rewarded
-    **/
-    function withdrawERC20(
-        address erc20,
-        uint256 amount,
-        address payable winner
-    ) external {
-        ERC20 withdrawingToken = ERC20(erc20);
+    /***
+     * @notice Allow sponsors to reward winner using some ERC20 tokens.
+     * This function will be called by sponsors to reward winners with some ERC20 tokens
+     * @param _token The address of the token to be rewarded
+     * @param _amount The amount of ERC20 tokens to be rewarded
+     * @param _winner The address of the winner to be rewarded
+     **/
+    function withdraw(
+        address _token,
+        uint256 _amount,
+        address payable _winner
+    ) external nonReentrant {
+        require(
+            _amount <= sponsorsTokens[address(msg.sender)][_token],
+            "!balance"
+        );
 
-        if (amount > sponsorsTokens[msg.sender][erc20])
-            revert NotEnoughTokens();
+        sponsorsTokens[address(msg.sender)][_token] -= _amount;
 
-        sponsorsTokens[msg.sender][erc20] -= amount;
-        if (!withdrawingToken.transfer(winner, amount)) revert WithdrawFailed();
+        if (_token == native) {
+            IWETH(native).withdraw(_amount);
+            payable(_winner).transfer(_amount);
+        } else {
+            IERC20(_token).safeTransfer(address(_winner), _amount);
+        }
+
+        emit Withdraw(_token, _amount, _winner);
+    }
+
+    /******************
+     * Owner Functions
+     ******************/
+
+    /***
+     * @notice Allow sponsors to reward winner using some ERC20 tokens.
+     * @dev This function will be called by owner to set status for each sponsor
+     * @param _sponsor The address of the sponsor
+     * @param _status The verification status of the sponsor
+     **/
+    function setVerifiedSponsor(address _sponsor, bool _status)
+        external
+        onlyOwner
+    {
+        verifiedSponsors[_sponsor] = _status;
+
+        emit SetVerifiedSponsor(_sponsor, _status);
     }
 }
