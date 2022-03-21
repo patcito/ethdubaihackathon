@@ -1,0 +1,142 @@
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.11;
+pragma experimental ABIEncoderV2;
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "hardhat/console.sol";
+
+contract ProjectContract {
+    address public owner;
+}
+
+contract Hackathon {
+    bool public openVote;
+    ERC20 public erc20;
+    address public owner;
+    using Counters for Counters.Counter;
+
+    mapping(address => string) public projectRepos;
+    mapping(address => string) public projectNames;
+    mapping(address => address) public projectOwners;
+    mapping(address => string) public projectDemoUrls;
+    mapping(address => string) public projectDescriptions;
+    mapping(address => uint256) public projectChallenges;
+
+    mapping(address => Counters.Counter) public projectVotes;
+    mapping(string => uint256) public userProjectVotes;
+    event Log(address indexed project, string message, address sender);
+
+    struct Project{
+        string name;
+        string repo;
+        string demoUrl;
+        string description;
+        address addr;
+        uint challenge;
+    }
+    constructor() {
+        owner = payable(msg.sender);
+    }
+
+    function getProject(address addr) public view returns (Project memory){
+        Project memory p;
+        p.addr = addr;
+        p.name = projectNames[addr];
+        p.repo = projectRepos[addr];
+        p.demoUrl = projectDemoUrls[addr];
+        p.description = projectDescriptions[addr];
+        p.challenge = projectChallenges[addr];
+        return p;
+    }
+
+    function setProject(
+        string memory repo,
+        string memory name,
+        string memory demoUrl,
+        address project,
+        string memory description,
+        uint256 challenge
+    ) public {
+        ProjectContract projectContract;
+        projectContract = ProjectContract(project);
+        address projectOwner = projectContract.owner();
+        require(
+            projectOwner == msg.sender,
+            "only project owner"
+        );
+        require(bytes(name).length != 0, "project name missing");
+        require(bytes(repo).length != 0, "project repo missing");
+        require(bytes(demoUrl).length != 0, "project name missing");
+        bool isNew = bytes(projectNames[project]).length == 0;
+        projectNames[project] = name;
+        projectOwners[project] = msg.sender;
+        projectRepos[project] = repo;
+        projectDemoUrls[project] = demoUrl;
+        projectDescriptions[project] = description;
+        projectChallenges[project] = challenge;
+        console.log(name);
+        console.log(repo);
+        console.log(demoUrl);
+        console.log(challenge);
+        console.log(description);
+        if (isNew) {
+            emit Log(project, name, msg.sender);
+        }
+    }
+
+    function setOpenVote(bool open) public {
+        require(msg.sender == owner, "only owner");
+        openVote = open;
+    }
+
+    function voteOnProject(address project, uint256 vote) public {
+        if (!openVote) {
+            ERC20 token = ERC20(erc20);
+            uint256 b = token.balanceOf(msg.sender);
+            require(b > 0, "you don't have permission to vote");
+        }
+        bytes32 data = bytes32(abi.encodePacked(msg.sender, project));
+        string memory key = bToS(data);
+        uint256 currentVote = userProjectVotes[key];
+        if (currentVote == vote) {
+            return;
+        }
+        if (vote == 1 && currentVote == 0) {
+            userProjectVotes[key] = vote;
+            projectVotes[project].increment();
+            return;
+        }
+        if (vote == 0 && currentVote == 1) {
+            userProjectVotes[key] = vote;
+            projectVotes[project].decrement();
+            return;
+        }
+    }
+
+    function bToS(bytes32 _bytes32) public pure returns (string memory) {
+        uint8 i = 0;
+        while (i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
+    }
+
+    function withdraw() public {
+        uint256 amount = address(this).balance;
+
+        (bool ok, ) = owner.call{value: amount}("");
+        require(ok, "Failed");
+    }
+
+    function withdrawERC20(address erc20Addr) public {
+        ERC20 withdrawingToken = ERC20(erc20Addr);
+        uint256 erc20Balance = withdrawingToken.balanceOf(address(this));
+
+        require(withdrawingToken.transfer(owner, erc20Balance), "Failed");
+    }
+}
