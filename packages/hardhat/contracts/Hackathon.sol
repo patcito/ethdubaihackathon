@@ -32,9 +32,36 @@ contract Hackathon {
         owner = payable(msg.sender);
     }
 
-    /// @notice Allow anyone to deposit some native tokens.
+    /**
+        @notice Convert bytes to string
+        @dev This function is called to convert the concatenation of the token address and the sponsor address into a string in order to save it in the sponsorsTokens mapping
+        @param _bytes32 The bytes to be converted
+        @return string The string representation of the bytes
+    **/
+    function _bytesToString(bytes32 _bytes32)
+        internal
+        pure
+        returns (string memory)
+    {
+        uint8 i = 0;
+        while (i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
+    }
+
+    /// @notice Allow anyone to deposit some native tokens
     function depositETH() public payable {
         sponsorsETH[msg.sender] += msg.value;
+    }
+
+    /// @notice Native way to receive some ETHs
+    receive() external payable {
+        depositETH();
     }
 
     /**
