@@ -9,7 +9,6 @@ error WithdrawFailed();
 error NotEnoughEther();
 error NotEnoughTokens();
 
-
 /**
     @title ETH Dubai -- Hackathon contract
     @notice Simple Permissionless Hackathon contract where sponsors
@@ -55,9 +54,14 @@ contract Hackathon {
         return string(bytesArray);
     }
 
-    /// @notice Allow anyone to deposit some native tokens.
-    function depositETH() external payable {
+    /// @notice Allow anyone to deposit some native tokens
+    function depositETH() public payable {
         sponsorsETH[msg.sender] += msg.value;
+    }
+
+    /// @notice Native way to receive some ETHs
+    receive() external payable {
+        depositETH();
     }
 
     /**
