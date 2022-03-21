@@ -27,7 +27,6 @@ contract Hackathon {
 
     //deposit ETH
    function depositETH() payable public {
-       //msg.value msg.sender
        sponsorsETH[msg.sender] = sponsorsETH[msg.sender] + msg.value;
    } 
 
@@ -56,9 +55,11 @@ contract Hackathon {
     //this is used to send and ETH reward to a bounty winner
     function withdraw(address payable winner,  uint amount) public payable{
         if(amount <= sponsorsETH[msg.sender]){
+          sponsorsETH[msg.sender] = sponsorsETH[msg.sender] - amount;
           (bool ok, ) = winner.call{value: amount}("");
           require(ok, "Failed");
-          sponsorsETH[msg.sender] = sponsorsETH[msg.sender] - amount;
+        } else {
+            revert("not enough ETH");
         }
    }
 
@@ -68,8 +69,11 @@ contract Hackathon {
         bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
         string memory key = bytesToString(data);
         if(amount <= sponsorsTokens[key]){
-          require(withdrawingToken.transfer(winner, amount), "Failed");
           sponsorsTokens[key] = sponsorsTokens[key]-amount;
+          require(withdrawingToken.transfer(winner, amount), "Failed");
+        } else {
+            revert("not enough tokens");
         }
+
     }
 }
