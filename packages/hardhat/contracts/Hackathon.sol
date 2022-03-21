@@ -9,7 +9,6 @@ error WithdrawFailed();
 error NotEnoughEther();
 error NotEnoughTokens();
 
-
 /**
     @title ETH Dubai -- Hackathon contract
     @notice Simple Permissionless Hackathon contract where sponsors
@@ -19,11 +18,11 @@ contract Hackathon {
     address public immutable owner;
 
     //keeps track of amount deposited by each sponsor for a specific token
-    //use a composite key of sponsor address + erc20 token address
-    //such as sponsorsTokens['0xfooSponsor'+'0xbarToken'] = 123
-    mapping(string => uint256) public sponsorsTokens;
+    // mapping(sponsor => mapping(erc20 => amount))
+    mapping(address => mapping(address => uint256)) public sponsorsTokens;
 
     //keeps track of each ETH deposited by each sponsor
+    // mapping(sponsor => amount)
     mapping(address => uint256) public sponsorsETH;
 
     //TODO implement shares with bentobox
@@ -33,30 +32,8 @@ contract Hackathon {
         owner = payable(msg.sender);
     }
 
-    /**
-        @notice Convert bytes to string
-        @dev This function is called to convert the concatenation of the token address and the sponsor address into a string in order to save it in the sponsorsTokens mapping
-        @param _bytes32 The bytes to be converted
-        @return string The string representation of the bytes
-    **/
-    function _bytesToString(bytes32 _bytes32)
-        internal
-        pure
-        returns (string memory)
-    {
-        uint8 i = 0;
-        while (i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
-    }
-
     /// @notice Allow anyone to deposit some native tokens.
-    function depositETH() external payable {
+    function depositETH() public payable {
         sponsorsETH[msg.sender] += msg.value;
     }
 
@@ -67,10 +44,8 @@ contract Hackathon {
         @param amount The amount of tokens to be deposited
     **/
     function depositToken(address erc20, uint256 amount) external payable {
-        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = _bytesToString(data);
+        sponsorsTokens[msg.sender][erc20] += amount;
 
-        sponsorsTokens[key] += amount;
         ERC20 withdrawingToken = ERC20(erc20);
 
         if (!withdrawingToken.transferFrom(msg.sender, address(this), amount))
@@ -108,12 +83,11 @@ contract Hackathon {
         address payable winner
     ) external {
         ERC20 withdrawingToken = ERC20(erc20);
-        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = _bytesToString(data);
 
-        if (amount > sponsorsTokens[key]) revert NotEnoughTokens();
+        if (amount > sponsorsTokens[msg.sender][erc20])
+            revert NotEnoughTokens();
 
-        sponsorsTokens[key] -= amount;
+        sponsorsTokens[msg.sender][erc20] -= amount;
         if (!withdrawingToken.transfer(winner, amount)) revert WithdrawFailed();
     }
 }
