@@ -4,11 +4,19 @@ pragma experimental ABIEncoderV2;
 
 import "./@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-//Simple Permissionless Hackathon contract where sponsors
-//can deposit any token and rewards them to any address on withdraw
+error DepositFailed();
+error WithdrawFailed();
+error NotEnoughEther();
+error NotEnoughTokens();
 
+
+/**
+    @title ETH Dubai -- Hackathon contract
+    @notice Simple Permissionless Hackathon contract where sponsors
+            can deposit any token and rewards them to any address on withdraw
+**/
 contract Hackathon {
-    address public owner;
+    address public immutable owner;
 
     //keeps track of amount deposited by each sponsor for a specific token
     //use a composite key of sponsor address + erc20 token address
@@ -20,27 +28,22 @@ contract Hackathon {
 
     //TODO implement shares with bentobox
     mapping(string => uint256) public sponsorsShares;
- 
+
     constructor() {
         owner = payable(msg.sender);
     }
 
-    //deposit ETH
-   function depositETH() payable public {
-       sponsorsETH[msg.sender] = sponsorsETH[msg.sender] + msg.value;
-   } 
-
-    //deposit any token
-    function depositToken(address erc20, uint amount) payable public{
-        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = bytesToString(data);
-        sponsorsTokens[key] = sponsorsTokens[key] + amount;
-        ERC20 withdrawingToken = ERC20(erc20);
-        require(withdrawingToken.transferFrom(msg.sender, address(this), amount), "Failed");
-    }
-
-    //we use this to concat token address and sponsor address in the sponsorsTokens mapping
-    function bytesToString(bytes32 _bytes32) public pure returns (string memory) {
+    /**
+        @notice Convert bytes to string
+        @dev This function is called to convert the concatenation of the token address and the sponsor address into a string in order to save it in the sponsorsTokens mapping
+        @param _bytes32 The bytes to be converted
+        @return string The string representation of the bytes
+    **/
+    function _bytesToString(bytes32 _bytes32)
+        internal
+        pure
+        returns (string memory)
+    {
         uint8 i = 0;
         while (i < 32 && _bytes32[i] != 0) {
             i++;
@@ -52,28 +55,65 @@ contract Hackathon {
         return string(bytesArray);
     }
 
-    //this is used to send and ETH reward to a bounty winner
-    function withdraw(address payable winner,  uint amount) public payable{
-        if(amount <= sponsorsETH[msg.sender]){
-          sponsorsETH[msg.sender] = sponsorsETH[msg.sender] - amount;
-          (bool ok, ) = winner.call{value: amount}("");
-          require(ok, "Failed");
-        } else {
-            revert("not enough ETH");
-        }
-   }
+    /// @notice Allow anyone to deposit some native tokens.
+    function depositETH() external payable {
+        sponsorsETH[msg.sender] += msg.value;
+    }
 
-    //this is used to send a token reward to a bounty winner
-    function withdrawERC20(address erc20, uint amount, address payable winner) public {
+    /**
+        @notice Allow anyone to deposit any ERC20 tokens
+        This function will be called by sponsors to deposit some tokens into the contract
+        @param erc20 The address of the ERC20 token to be deposited
+        @param amount The amount of tokens to be deposited
+    **/
+    function depositToken(address erc20, uint256 amount) external payable {
+        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
+        string memory key = _bytesToString(data);
+
+        sponsorsTokens[key] += amount;
+        ERC20 withdrawingToken = ERC20(erc20);
+
+        if (!withdrawingToken.transferFrom(msg.sender, address(this), amount))
+            revert DepositFailed();
+    }
+
+    /** 
+        @notice Allow sponsors to reward winner using some native tokens. 
+        This function will be called by sponsors to reward winners with some native tokens
+        @param winner The address of the winner to be rewarded
+        @param amount The amount of native tokens to be rewarded
+    **/
+    function withdraw(address payable winner, uint256 amount) external payable {
+        if (amount > sponsorsETH[msg.sender]) revert NotEnoughEther();
+
+        /* As the amount is checked to be lower than the amount of ETH the sender has,
+           this value won't underflow. */
+        unchecked {
+            sponsorsETH[msg.sender] -= amount;
+        }
+
+        (bool ok, ) = winner.call{value: amount}("");
+        if (!ok) revert WithdrawFailed();
+    }
+
+    /** 
+        @notice Allow sponsors to reward winner using some ERC20 tokens. 
+        This function will be called by sponsors to reward winners with some ERC20 tokens
+        @param winner The address of the winner to be rewarded
+        @param amount The amount of ERC20 tokens to be rewarded
+    **/
+    function withdrawERC20(
+        address erc20,
+        uint256 amount,
+        address payable winner
+    ) external {
         ERC20 withdrawingToken = ERC20(erc20);
         bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = bytesToString(data);
-        if(amount <= sponsorsTokens[key]){
-          sponsorsTokens[key] = sponsorsTokens[key]-amount;
-          require(withdrawingToken.transfer(winner, amount), "Failed");
-        } else {
-            revert("not enough tokens");
-        }
+        string memory key = _bytesToString(data);
 
+        if (amount > sponsorsTokens[key]) revert NotEnoughTokens();
+
+        sponsorsTokens[key] -= amount;
+        if (!withdrawingToken.transfer(winner, amount)) revert WithdrawFailed();
     }
 }
