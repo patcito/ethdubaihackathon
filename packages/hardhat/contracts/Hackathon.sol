@@ -25,9 +25,6 @@ contract Hackathon {
     // mapping(sponsor => amount)
     mapping(address => uint256) public sponsorsETH;
 
-    //TODO implement shares with bentobox
-    mapping(string => uint256) public sponsorsShares;
-
     constructor() {
         owner = payable(msg.sender);
     }
