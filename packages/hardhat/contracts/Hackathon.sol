@@ -18,11 +18,11 @@ contract Hackathon {
     address public immutable owner;
 
     //keeps track of amount deposited by each sponsor for a specific token
-    //use a composite key of sponsor address + erc20 token address
-    //such as sponsorsTokens['0xfooSponsor'+'0xbarToken'] = 123
-    mapping(string => uint256) public sponsorsTokens;
+    // mapping(sponsor => mapping(erc20 => amount))
+    mapping(address => mapping(address => uint256)) public sponsorsTokens;
 
     //keeps track of each ETH deposited by each sponsor
+    // mapping(sponsor => amount)
     mapping(address => uint256) public sponsorsETH;
 
     //TODO implement shares with bentobox
@@ -71,10 +71,8 @@ contract Hackathon {
         @param amount The amount of tokens to be deposited
     **/
     function depositToken(address erc20, uint256 amount) external payable {
-        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = _bytesToString(data);
+        sponsorsTokens[msg.sender][erc20] += amount;
 
-        sponsorsTokens[key] += amount;
         ERC20 withdrawingToken = ERC20(erc20);
 
         if (!withdrawingToken.transferFrom(msg.sender, address(this), amount))
@@ -112,12 +110,11 @@ contract Hackathon {
         address payable winner
     ) external {
         ERC20 withdrawingToken = ERC20(erc20);
-        bytes32 data = bytes32(abi.encodePacked(msg.sender, erc20));
-        string memory key = _bytesToString(data);
 
-        if (amount > sponsorsTokens[key]) revert NotEnoughTokens();
+        if (amount > sponsorsTokens[msg.sender][erc20])
+            revert NotEnoughTokens();
 
-        sponsorsTokens[key] -= amount;
+        sponsorsTokens[msg.sender][erc20] -= amount;
         if (!withdrawingToken.transfer(winner, amount)) revert WithdrawFailed();
     }
 }
