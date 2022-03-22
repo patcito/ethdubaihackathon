@@ -10,7 +10,7 @@ import Button from "../components/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-const Globe = dynamic(() => import("react-globe.gl"));
+const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
 const Home: NextPage = () => {
   const account = useSelector(defaultAccount);
