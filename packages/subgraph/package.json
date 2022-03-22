@@ -1,0 +1,17 @@
+{
+  "name": "subgraph",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --product hosted-service subgraph/ethdubai-hackathon",
+    "create-local": "graph create --node http://localhost:8020/ subgraph/ethdubai-hackathon",
+    "remove-local": "graph remove --node http://localhost:8020/ subgraph/ethdubai-hackathon",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 subgraph/ethdubai-hackathon"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.28.1",
+    "@graphprotocol/graph-ts": "0.26.0"
+  }
+}
