@@ -15,10 +15,10 @@ const SponsorsTable: FC<Props> = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th>ETH</th>
-            <th>5 ETH</th>
-          </tr>
+          {/* <tr>
+            <td>ETH</td>
+            <td>5 ETH</td>
+          </tr> */}
         </tbody>
       </table>
     </>
