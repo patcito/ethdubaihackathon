@@ -1,0 +1,80 @@
+@import "../../../styles/mixins/responsive.scss";
+
+.title {
+  @apply text-center font-medium select-none mb-8;
+
+  line-height: 1;
+  font-size: 4rem;
+  background: rgb(131, 58, 180);
+  background: -moz-linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  background: linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#833ab4",endColorstr="#fcb045",GradientType=1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  @include mq("phone-wide", "max") {
+    @apply mb-4;
+
+    font-size: 2rem;
+  }
+}
+
+.wrapper {
+  @apply flex flex-col justify-center items-center text-white container mx-auto max-w-5xl;
+
+  padding-top: 8rem;
+  padding-bottom: 4rem;
+
+  @include mq("phone-wide", "max") {
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+  }
+}
+
+.backButton {
+  @apply text-left mb-4 uppercase text-lg opacity-100 inline-block rounded-full py-1 px-4 mr-auto;
+
+  @include mq("phone-wide", "max") {
+    @apply pl-0;
+  }
+
+  &:hover {
+    @apply cursor-pointer;
+  }
+}
+
+.row {
+  @apply flex flex-row gap-8 w-full justify-center;
+
+  @include mq("phone-wide", "max") {
+    @apply flex-col px-6;
+  }
+}
+
+.leftCol {
+  @apply flex flex-col;
+
+  flex: 6;
+}
+
+.rightCol {
+  @apply flex flex-col gap-4;
+
+  flex: 3;
+}

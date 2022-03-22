@@ -1,0 +1,56 @@
+@import "../styles/mixins/responsive.scss";
+
+.globeBackground {
+  @apply fixed top-0 left-0;
+}
+
+.main {
+  @apply relative z-10 text-center;
+}
+
+.container {
+  @apply flex flex-row justify-center items-center h-screen;
+}
+
+.leading {
+  @apply text-white text-center select-none;
+
+  font-size: 2.5rem;
+
+  @include mq("phone-wide", "max") {
+    font-size: 1.5rem;
+  }
+}
+
+.title {
+  @apply text-center font-medium select-none;
+
+  line-height: 1;
+  font-size: 6rem;
+  background: rgb(131, 58, 180);
+  background: -moz-linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  background: linear-gradient(
+    90deg,
+    rgba(131, 58, 180, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(252, 176, 69, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#833ab4",endColorstr="#fcb045",GradientType=1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  @include mq("phone-wide", "max") {
+    font-size: 4rem;
+  }
+}

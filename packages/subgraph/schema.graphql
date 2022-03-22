@@ -1,0 +1,27 @@
+type Sponsor @entity {
+  id: ID!
+  address: Bytes!
+  verified: Boolean!
+}
+
+type SponsorBalance @entity {
+  id: ID!
+  sponsor: Sponsor!
+  token: Token!
+  totalAmount: BigInt!
+}
+
+type Token @entity {
+  id: ID!
+  address: Bytes!
+  name: String!
+  symbol: String!
+  decimals: BigInt!
+}
+
+type Deposit @entity {
+  id: ID!
+  sponsor: Sponsor!
+  token: Token!
+  amount: BigInt!
+}

@@ -1,0 +1,463 @@
+@import "../../styles/mixins/responsive.scss";
+
+.modalContainer {
+  @apply fixed w-screen h-screen top-0 left-0 flex flex-row items-center justify-center py-8;
+
+  z-index: 200;
+}
+
+.backdrop {
+  @apply absolute w-full h-full top-0 left-0;
+
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal {
+  @apply z-40 rounded-2xl max-h-full overflow-y-auto;
+
+  max-width: 480px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.1);
+  background: rgba(10, 10, 10, 0.3);
+  backdrop-filter: blur(25px);
+  padding: 1.5rem 1.5rem 1rem;
+
+  @include mq("phone-wide", "max") {
+    width: 100%;
+    padding: 1.5rem 1.5rem 1.125rem;
+    border-radius: 1rem;
+  }
+}
+
+.modalAutoWidth {
+  max-width: inherit;
+}
+
+.modalNoPadding {
+  @apply px-0 pb-0;
+
+  @include mq("phone-wide", "max") {
+    @apply p-4 pb-2;
+  }
+
+  > .title {
+    @apply text-center font-medium mb-8;
+
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+@supports not (backdrop-filter: none) {
+  /* it is hard reading the model when the backdrop-filter is not supported by the user's browser */
+  .modal {
+    background: rgba(20, 20, 20, 0.9);
+  }
+}
+
+.balanceRow {
+  @apply flex flex-row font-semibold mb-4 items-center;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  @include mq("phone-wide", "max") {
+    font-size: 0.875rem;
+  }
+
+  &:last-of-type {
+    @apply mb-4;
+  }
+}
+
+.balanceRowSeparator {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.balanceCol {
+  @apply flex flex-col font-medium;
+}
+
+.balanceTitle {
+  @apply flex-1;
+}
+
+.balanceValue {
+  @apply text-right;
+}
+
+.balanceAmount {
+  @apply font-bold mr-3 text-white;
+}
+
+.subBalance {
+  @apply font-medium;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  .balanceAmount {
+    @apply mr-2 font-medium;
+
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.quickBalance {
+  @apply flex flex-row gap-4 mb-3;
+
+  color: rgba(255, 255, 255, 0.9);
+
+  @include mq("phone-wide", "max") {
+    @apply gap-2 text-sm font-medium;
+  }
+}
+
+.quickBalanceSelector {
+  @apply flex flex-1 items-center justify-center rounded-xl select-none py-4;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 0.23s linear;
+
+  &:hover {
+    @apply cursor-pointer;
+
+    background-color: rgba(255, 255, 255, 0.04);
+    transition: none;
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  @include mq("tablet-wide", "max") {
+    @apply py-3;
+  }
+}
+
+.balanceInput {
+  @apply w-full text-right outline-none font-light;
+
+  -moz-appearance: textfield;
+  font-size: 2.5rem;
+  padding: 0.625rem 1.875rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.25rem;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* Chrome, Safari, Edge, Opera */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  @include mq("tablet-wide", "max") {
+    font-size: 2rem;
+    padding: 0.5rem 1.5rem;
+  }
+}
+
+.submitButton {
+  @apply w-full text-white py-3 text-xl rounded-xl;
+
+  transition: all 0.2s linear;
+  background: #0047ff;
+
+  @include mq("phone-wide", "max") {
+    @apply rounded-md;
+
+    font-size: 1.125rem;
+    padding: 0.5rem 0;
+  }
+
+  svg {
+    @apply mr-3;
+  }
+
+  &:disabled {
+    @apply opacity-60;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}
+
+.convertButton {
+  background: linear-gradient(210deg, #0047ff, #c8a542, #0047ff);
+  background-size: 400% 400%;
+
+  &:not(:disabled) {
+    animation: gradient 8s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 400%;
+    }
+
+    50% {
+      background-position: 100% 400%;
+    }
+
+    100% {
+      background-position: 0% 400%;
+    }
+  }
+}
+
+.inputGroup {
+  @apply flex flex-row w-full relative items-center;
+
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 1.125rem 1rem;
+  margin-bottom: 0.875rem;
+
+  @include mq("tablet-wide", "max") {
+    padding: 0.875rem 1rem;
+    width: 100%;
+  }
+
+  .inputSymbol {
+    @apply flex z-10 font-semibold rounded-full overflow-hidden;
+
+    width: 42px;
+    height: 42px;
+
+    @include mq("tablet-wide", "max") {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .inputBox {
+    @apply absolute left-0 top-0 z-20 w-full;
+
+    outline: none;
+    font-size: 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: right;
+    padding: 0.875rem 5rem 0.875rem 1rem;
+    line-height: 0;
+    background: transparent;
+    -moz-appearance: textfield;
+
+    @include mq("tablet-wide", "max") {
+      font-size: 1.375rem;
+      padding: 0.875rem 4.25rem 0.875rem 4.25rem;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .inputBoxStatic {
+    @apply text-left text-base static p-0;
+  }
+
+  .inputSuffix {
+    @apply flex-grow text-right block;
+
+    font-size: 1rem;
+    opacity: 0.2;
+    width: 100%;
+
+    @include mq("tablet-wide", "max") {
+      @apply font-semibold;
+
+      font-size: 1rem;
+    }
+  }
+}
+
+.wrapConversion {
+  @apply rounded-2xl py-8 px-6 pb-7 mt-4;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.2);
+
+  p {
+    @apply opacity-50 text-sm;
+  }
+}
+
+.wrapConversionIcons {
+  @apply flex flex-row items-center gap-5 justify-center mb-4;
+
+  .wrapConversionArrow {
+    @apply h-6 w-auto;
+  }
+
+  .wrapConversionIcon {
+    @apply h-12 w-auto;
+  }
+}
+
+.convertTokenIcons {
+  @apply flex flex-row items-center gap-2;
+
+  .convertTokenIcon {
+    @apply rounded-full overflow-hidden;
+
+    width: 42px;
+    height: 42px;
+  }
+
+  .convertTokenText {
+    @apply font-semibold uppercase;
+
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.button {
+  @apply text-white px-8 py-3 rounded-xl font-semibold inline-block text-center justify-center text-xl;
+
+  white-space: nowrap;
+  width: 100%;
+  transition: all 0.23s ease-in-out;
+
+  &:disabled {
+    @apply opacity-60;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonConvert {
+  @apply text-base py-2 rounded-full mt-4;
+
+  background: linear-gradient(210deg, #0047ff, #c8a542, #0047ff);
+  background-size: 400% 400%;
+
+  &:hover {
+    animation: gradient 8s ease infinite;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 400%;
+  }
+
+  50% {
+    background-position: 100% 400%;
+  }
+
+  100% {
+    background-position: 0% 400%;
+  }
+}
+
+.warningMessage {
+  @apply py-2 px-4 rounded-md mb-4 text-sm;
+
+  color: rgba(0, 255, 178, 0.9);
+  border: 1px solid rgba(0, 255, 178, 0.5);
+}
+
+.modalHeader {
+  @apply flex flex-row items-center mb-4 w-full;
+
+  .modalTitle {
+    @apply w-full text-center font-semibold;
+
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+
+    @include mq("tablet-wide", "max") {
+      font-size: 1rem;
+    }
+
+    @include mq("phone-wide", "max") {
+      font-size: 1.125rem;
+    }
+  }
+
+  .prevButton {
+    @apply absolute rounded-full;
+
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.07);
+  }
+}
+
+.loading {
+  @apply flex flex-col justify-center items-center w-full py-4;
+
+  min-width: 16rem;
+
+  svg {
+    @apply mb-4;
+
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .loadingText {
+    @apply font-medium;
+
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.note {
+  @apply font-medium;
+
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/** Sizes **/
+.sizeLg {
+  min-width: 420px;
+
+  @include mq("phone-wide", "max") {
+    min-width: auto;
+  }
+}
+
+.sizeXl {
+  min-width: 540px;
+
+  @include mq("phone-wide", "max") {
+    min-width: auto;
+  }
+}
+
+.closeButton {
+  @apply absolute top-4 right-4 flex flex-row items-center justify-center;
+
+  background-color: rgba(19, 19, 19, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999rem;
+  width: 32px;
+  height: 32px;
+  z-index: 41;
+}

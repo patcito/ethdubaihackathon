@@ -1,0 +1,36 @@
+.table {
+  @apply w-full text-lg;
+
+  thead {
+    color: rgba(255, 255, 255, 0.8);
+
+    th {
+      @apply font-light py-2 px-4;
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background 0.23s linear;
+
+      &:nth-child(odd) {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      td {
+        @apply py-2 px-4 font-light;
+
+        transition: color 0.23s linear;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.02);
+
+        td {
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+    }
+  }
+}
