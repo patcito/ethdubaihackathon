@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { ethers } from "hardhat";
+import { advanceTime, duration } from "./utils/time";
 
 describe("Hackathon", function () {
   before(async function () {
@@ -16,7 +17,7 @@ describe("Hackathon", function () {
     await this.weth.deployed();
 
     const Hackathon = await ethers.getContractFactory("Hackathon");
-    this.hackathon = await Hackathon.deploy(this.weth.address);
+    this.hackathon = await Hackathon.deploy(this.weth.address, "1648771200");
     await this.hackathon.deployed();
 
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
@@ -208,5 +209,51 @@ describe("Hackathon", function () {
       .withArgs(this.bob.address, true);
 
     expect(await this.hackathon.verifiedSponsors(this.bob.address)).to.eq(true);
+  });
+
+  it("Should allow owner to withdraw reward after the expiration time", async function () {
+    await this.hackathon
+      .connect(this.alex)
+      .deposit(this.weth.address, parseEther("100"), {
+        value: parseEther("100"),
+      });
+
+    expect(await this.weth.balanceOf(this.hackathon.address)).to.eq(
+      parseEther("100")
+    );
+
+    await expect(
+      this.hackathon.withdrawReward(
+        this.alex.address,
+        this.weth.address,
+        parseEther("100")
+      )
+    ).to.be.revertedWith("!active");
+
+    await advanceTime(duration.years(1).toNumber());
+
+    await expect(
+      this.hackathon
+        .connect(this.bob)
+        .withdrawReward(this.alex.address, this.weth.address, parseEther("100"))
+    ).to.be.revertedWith("!owner");
+
+    await expect(
+      this.hackathon.withdrawReward(
+        this.alex.address,
+        this.weth.address,
+        parseEther("100")
+      )
+    )
+      .to.emit(this.hackathon, "WithdrawReward")
+      .withArgs(this.alex.address, this.weth.address, parseEther("100"));
+
+    expect(await this.weth.balanceOf(this.hackathon.address)).to.eq(
+      parseEther("0")
+    );
+
+    expect(await this.weth.balanceOf(this.deployer.address)).to.eq(
+      parseEther("100")
+    );
   });
 });

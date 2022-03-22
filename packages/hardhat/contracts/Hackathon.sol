@@ -25,6 +25,9 @@ contract Hackathon is ReentrancyGuard {
     // an address of wrapped native
     address public immutable native;
 
+    // a timestamp when owner can claim the rewards on behalf of sponsors
+    uint256 public immutable rewardExpiresAfter;
+
     // bounty reward details
     struct BountyReward {
         string title;
@@ -67,6 +70,11 @@ contract Hackathon is ReentrancyGuard {
         address indexed winner,
         string title
     );
+    event WithdrawReward(
+        address indexed _sponsor,
+        address indexed _token,
+        uint256 _amount
+    );
     event SetVerifiedSponsor(address indexed sponsor, bool status);
 
     /*****************
@@ -95,9 +103,10 @@ contract Hackathon is ReentrancyGuard {
      * Functions
      ************/
 
-    constructor(address _native) {
+    constructor(address _native, uint256 _rewardExpiresAfter) {
         owner = address(msg.sender);
         native = _native;
+        rewardExpiresAfter = _rewardExpiresAfter;
     }
 
     /// @notice Native way to receive some ETHs
@@ -190,5 +199,25 @@ contract Hackathon is ReentrancyGuard {
         verifiedSponsors[_sponsor] = _status;
 
         emit SetVerifiedSponsor(_sponsor, _status);
+    }
+
+    /***
+     * @notice Allow owner to withdraw reward after it expires
+     * @dev This function will be called by owner to withdraw reward deposited by sponsor
+     * @param _sponsor The address of the sponsor
+     * @param _token The address of token to withdraw
+     * @param _amount The amount of token to withdraw
+     **/
+    function withdrawReward(
+        address _sponsor,
+        address _token,
+        uint256 _amount
+    ) external onlyOwner {
+        require(block.timestamp >= rewardExpiresAfter, "!active");
+        sponsorsTokens[_sponsor][_token] -= _amount;
+
+        IERC20(_token).safeTransfer(address(owner), _amount);
+
+        emit WithdrawReward(_sponsor, _token, _amount);
     }
 }
