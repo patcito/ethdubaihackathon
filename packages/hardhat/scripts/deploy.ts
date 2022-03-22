@@ -1,30 +1,35 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
+import { parseEther } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  const signers = await ethers.getSigners();
 
-  // We get the contract to deploy
+  const Weth = await ethers.getContractFactory("WETH");
+  const weth = await Weth.deploy();
+  await weth.deployed();
+
   const Hackathon = await ethers.getContractFactory("Hackathon");
-  const hackathon = await Hackathon.deploy();
-
+  const hackathon = await Hackathon.deploy(weth.address);
   await hackathon.deployed();
 
+  const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
+  const erc20Mock = await ERC20Mock.deploy(
+    "ETHDubai",
+    "ETHDUBAI",
+    parseEther("1000"),
+    signers[0].address
+  );
+
+  console.log("WETH deployed to:", weth.address);
   console.log("Hackathon deployed to:", hackathon.address);
+  console.log("ERC20Mock deployed to:", erc20Mock.address);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(1);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

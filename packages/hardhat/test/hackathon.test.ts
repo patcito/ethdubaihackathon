@@ -95,18 +95,29 @@ describe("Hackathon", function () {
     await expect(
       this.hackathon
         .connect(this.alex)
-        .withdraw(this.erc20Mock.address, parseEther("100"), this.bob.address)
+        .withdraw(
+          this.erc20Mock.address,
+          parseEther("100"),
+          this.bob.address,
+          "ETHDubai"
+        )
     ).to.be.revertedWith("!balance");
 
     await expect(
       this.hackathon.withdraw(
         this.erc20Mock.address,
         parseEther("100"),
-        this.bob.address
+        this.bob.address,
+        "ETHDubai"
       )
     )
       .to.emit(this.hackathon, "Withdraw")
-      .withArgs(this.erc20Mock.address, parseEther("100"), this.bob.address);
+      .withArgs(
+        this.erc20Mock.address,
+        parseEther("100"),
+        this.bob.address,
+        "ETHDubai"
+      );
 
     expect(await this.erc20Mock.balanceOf(this.hackathon.address)).to.eq(
       parseEther("0")
@@ -136,22 +147,33 @@ describe("Hackathon", function () {
       value: parseEther("500"),
     });
 
+    expect(await this.hackathon.bountyRewardsLength(this.bob.address)).to.eq(0);
     await this.hackathon
       .connect(this.alex)
-      .withdraw(this.weth.address, parseEther("100"), this.bob.address);
+      .withdraw(
+        this.weth.address,
+        parseEther("100"),
+        this.bob.address,
+        "ETHDubai"
+      );
 
+    expect(await this.hackathon.bountyRewardsLength(this.bob.address)).to.eq(1);
     await this.hackathon.withdraw(
       this.weth.address,
       parseEther("250"),
-      this.bob.address
+      this.bob.address,
+      "ETHDubai-2"
     );
 
+    expect(await this.hackathon.bountyRewardsLength(this.bob.address)).to.eq(2);
     await this.hackathon.withdraw(
       this.weth.address,
       parseEther("250"),
-      this.bob.address
+      this.bob.address,
+      "ETHDubai-3"
     );
 
+    expect(await this.hackathon.bountyRewardsLength(this.bob.address)).to.eq(3);
     expect(
       await this.hackathon.sponsorsTokens(this.alex.address, this.weth.address)
     ).to.eq(parseEther("0"));
@@ -159,6 +181,21 @@ describe("Hackathon", function () {
     expect(await ethers.provider.getBalance(this.bob.address)).to.be.eq(
       parseEther("10600")
     );
+
+    let bountyReward = await this.hackathon.bountyRewards(this.bob.address, 0);
+    expect(bountyReward.title).to.eq("ETHDubai");
+    expect(bountyReward.rewardToken).to.eq(this.weth.address);
+    expect(bountyReward.rewardAmount).to.eq(parseEther("100"));
+
+    bountyReward = await this.hackathon.bountyRewards(this.bob.address, 1);
+    expect(bountyReward.title).to.eq("ETHDubai-2");
+    expect(bountyReward.rewardToken).to.eq(this.weth.address);
+    expect(bountyReward.rewardAmount).to.eq(parseEther("250"));
+
+    bountyReward = await this.hackathon.bountyRewards(this.bob.address, 2);
+    expect(bountyReward.title).to.eq("ETHDubai-3");
+    expect(bountyReward.rewardToken).to.eq(this.weth.address);
+    expect(bountyReward.rewardAmount).to.eq(parseEther("250"));
   });
 
   it("Should set verified sponsor", async function () {

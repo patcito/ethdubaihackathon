@@ -19,10 +19,18 @@ contract Hackathon is ReentrancyGuard {
      * Varibles
      ***********/
 
-    // address of the owner
+    // an address of the owner
     address public immutable owner;
 
+    // an address of wrapped native
     address public immutable native;
+
+    // bounty reward details
+    struct BountyReward {
+        string title;
+        address rewardToken;
+        uint256 rewardAmount;
+    }
 
     /***********
      * Modifiers
@@ -45,6 +53,9 @@ contract Hackathon is ReentrancyGuard {
     /// @dev mapping(sponsor => is verified boolean)
     mapping(address => bool) public verifiedSponsors;
 
+    /// @notice keep track of rewards paid to contestant
+    mapping(address => BountyReward[]) public bountyRewards;
+
     /**********
      * Events
      **********/
@@ -53,19 +64,31 @@ contract Hackathon is ReentrancyGuard {
     event Withdraw(
         address indexed token,
         uint256 amount,
-        address indexed winner
+        address indexed winner,
+        string title
     );
     event SetVerifiedSponsor(address indexed sponsor, bool status);
 
-    /**********
-     * Views
-     **********/
+    /*****************
+     * View Functions
+     *****************/
 
     /***
      * @notice Check token balance held by this contract
      */
     function tokenBalance(address _token) public view returns (uint256) {
         return IERC20(_token).balanceOf(address(this));
+    }
+
+    /**
+     * @notice Length of bounty rewards paid to winner
+     */
+    function bountyRewardsLength(address _winner)
+        public
+        view
+        returns (uint256)
+    {
+        return bountyRewards[_winner].length;
     }
 
     /************
@@ -117,11 +140,13 @@ contract Hackathon is ReentrancyGuard {
      * @param _token The address of the token to be rewarded
      * @param _amount The amount of ERC20 tokens to be rewarded
      * @param _winner The address of the winner to be rewarded
+     * @param _title The title of bounty reward
      **/
     function withdraw(
         address _token,
         uint256 _amount,
-        address payable _winner
+        address payable _winner,
+        string memory _title
     ) external nonReentrant {
         require(
             _amount <= sponsorsTokens[address(msg.sender)][_token],
@@ -137,7 +162,15 @@ contract Hackathon is ReentrancyGuard {
             IERC20(_token).safeTransfer(address(_winner), _amount);
         }
 
-        emit Withdraw(_token, _amount, _winner);
+        BountyReward memory _bountryReward = BountyReward({
+            title: _title,
+            rewardToken: _token,
+            rewardAmount: _amount
+        });
+
+        bountyRewards[_winner].push(_bountryReward);
+
+        emit Withdraw(_token, _amount, _winner, _title);
     }
 
     /******************
