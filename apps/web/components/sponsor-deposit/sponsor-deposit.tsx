@@ -48,7 +48,7 @@ const SponsorDeposit: FC<Props> = () => {
       const decimals = await tokenContract.methods.decimals().call();
       const encodedAbi = hackathon.methods
         .deposit(
-          "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+          tokenAddress,
           `0x${new BigNumber(
             new BigNumber(amount).times(
               new BigNumber(10).exponentiatedBy(decimals)
