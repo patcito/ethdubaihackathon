@@ -6,7 +6,6 @@ const withTM = require("next-transpile-modules")([
 ]);
 
 module.exports = withTM({
-  distDir: "build",
   reactStrictMode: true,
   experimental: { esmExternals: "loose" },
 });
