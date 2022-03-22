@@ -1,0 +1,24 @@
+.formGroup {
+  @apply flex flex-col mb-2;
+}
+
+.label {
+  @apply font-medium opacity-80 mb-2;
+}
+
+.input {
+  @apply rounded-lg p-4;
+
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  outline: none;
+  transition: border-color 0.23s ease-in-out;
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.1);
+  }
+}

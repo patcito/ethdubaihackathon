@@ -1,0 +1,11 @@
+.table {
+  @apply w-full;
+
+  thead {
+    color: rgba(255, 255, 255, 0.5);
+
+    th {
+      @apply font-light;
+    }
+  }
+}

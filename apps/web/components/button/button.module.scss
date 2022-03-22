@@ -1,0 +1,51 @@
+@import "../../../styles/mixins/responsive.scss";
+
+.button {
+  @apply text-center text-white font-semibold rounded-full text-xl mt-4 shadow-2xl shadow-black inline-block select-none z-20 relative;
+
+  padding: 0.875rem 2rem;
+  background-color: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.53s ease-in-out;
+
+  @include mq("phone-wide", "max") {
+    padding: 0.625rem 1.25rem;
+    font-size: 1.25rem;
+  }
+
+  &:hover {
+    @apply cursor-pointer;
+
+    background-color: rgba(10, 10, 10, 0.7);
+    transform: translateY(-3px);
+  }
+
+  &:active {
+    @apply cursor-pointer;
+
+    background-color: rgba(10, 10, 10, 0.1);
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    @apply opacity-50;
+  }
+}
+
+.sizeSm {
+  @apply text-base;
+
+  padding: 0.5rem;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
