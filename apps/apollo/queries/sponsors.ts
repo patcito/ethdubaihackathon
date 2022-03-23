@@ -6,6 +6,7 @@ export const GET_SPONSOR_BALANCES = gql(`
         id
         sponsor {
           address
+          verified
         }
         token {
           symbol
