@@ -88,7 +88,7 @@ export function handleDeposit(event: DepositEvent): void {
 }
 
 export function handleSetVerifiedSponsor(event: SetVerifiedSponsor): void {
-  let sponsor = createSponsorIfNotExists(event.transaction.from);
+  let sponsor = createSponsorIfNotExists(event.params.sponsor);
   sponsor.verified = event.params.status;
   sponsor.save();
 }
