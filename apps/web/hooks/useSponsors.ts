@@ -1,4 +1,3 @@
-import { SponsorBalance } from "./../../../packages/subgraph/generated/schema";
 import { GET_SPONSOR_BALANCES } from "./../../apollo/queries/sponsors";
 import { chainId } from "./../components/wallet-connect/slice/selectors";
 import { useSelector } from "react-redux";
@@ -42,7 +41,7 @@ const useSponsorBalances = ({ filter = (data: Balances[]) => data } = {}) => {
     }
 
     if (walletChainId) fetchBalances();
-  }, [walletChainId]);
+  }, [walletChainId, filter]);
 
   return balances;
 };
