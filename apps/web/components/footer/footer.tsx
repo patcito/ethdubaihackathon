@@ -18,15 +18,15 @@ const Footer: FC<Props> = () => {
     >
       <div className={styles.credit}>
         Contract by{" "}
-        <Link href="https://twitter/patcito" passHref>
+        <Link href="https://twitter.com/patcito" passHref>
           @patcito
         </Link>{" "}
         and the amazing{" "}
-        <Link href="https://twitter/financefeeder" passHref>
+        <Link href="https://twitter.com/financefeeder" passHref>
           @financefeeder
         </Link>{" "}
         with contribs by the great{" "}
-        <Link href="https://twitter/qdqd___" passHref>
+        <Link href="https://twitter.com/qdqd___" passHref>
           @qdqd___
         </Link>
         (make sure to follow them!)
