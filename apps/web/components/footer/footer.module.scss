@@ -1,0 +1,18 @@
+@import "../../../styles/mixins/responsive.scss";
+
+.footer {
+  @apply flex flex-row justify-center items-center gap-4;
+
+  margin-top: 5rem;
+}
+
+.credit {
+  @apply text-xl font-light font-medium;
+
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.creditLogo {
+  height: 60px !important;
+  opacity: 0.8;
+}

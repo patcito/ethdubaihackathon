@@ -9,6 +9,7 @@ import { defaultAccount } from "../components/wallet-connect/slice/selectors";
 import Button from "../components/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import Footer from "../components/footer";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
@@ -36,7 +37,7 @@ const Home: NextPage = () => {
         <div className="animate__animated animate__fadeInUp animate__slower">
           {account ? (
             <div className={"gap-4 flex flex-row justify-center items-center"}>
-              <Link href="/sponsors" passHref>
+              <Link href="/sponsors" passHref prefetch>
                 <Button>Sponsors &amp; Prizes</Button>
               </Link>
               <WalletConnect />
@@ -45,6 +46,7 @@ const Home: NextPage = () => {
             <WalletConnect />
           )}
         </div>
+        <Footer />
       </main>
       <div className={styles.globeBackground}>
         <Globe
