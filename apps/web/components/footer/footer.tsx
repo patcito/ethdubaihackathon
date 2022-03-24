@@ -40,7 +40,7 @@ const Footer: FC<Props> = () => {
             <Image
               src="/feeder-logo.svg"
               alt="Feeder Finance"
-              width={"180px"}
+              width={"140px"}
               height={"60px"}
             />
           </Link>

@@ -3,13 +3,33 @@
 .footer {
   margin-top: 5rem;
 }
+
+.footerCredit {
+}
+
 .footerLogo {
   @apply flex flex-row justify-center items-center gap-4;
-}
-.credit {
-  @apply text-xl font-light font-medium;
 
+  @include mq("phone-wide", "max") {
+    @apply flex-col gap-0;
+  }
+}
+
+.credit {
+  @apply text-lg font-light font-light;
+
+  line-height: 2;
   color: rgba(255, 255, 255, 0.5);
+
+  a {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  @include mq("phone-wide", "max") {
+    @apply text-lg mx-auto mb-4;
+
+    max-width: 80%;
+  }
 }
 
 .creditLogo {
