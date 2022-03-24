@@ -1,11 +1,11 @@
 @import "../../../styles/mixins/responsive.scss";
 
 .footer {
-  @apply flex flex-row justify-center items-center gap-4;
-
   margin-top: 5rem;
 }
-
+.footerLogo {
+  @apply flex flex-row justify-center items-center gap-4;
+}
 .credit {
   @apply text-xl font-light font-medium;
 

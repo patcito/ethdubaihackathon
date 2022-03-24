@@ -8,7 +8,7 @@ import SponsorDeposit from "../../components/sponsor-deposit";
 import SponsorRewardWinner from "../../components/sponsor-reward-winner";
 import SponsorsTable from "../../components/sponsors-table";
 import classNames from "classnames";
-import { faBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark, faStar } from "@fortawesome/free-regular-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Footer from "../../components/footer";
@@ -61,6 +61,12 @@ const SponsorsPage: NextPage = () => {
                   <div className={styles.linkButton}>
                     <FontAwesomeIcon icon={faGithub} />
                     <span>Source Code</span>
+                  </div>
+                </Link>
+                <Link href="https://forms.gle/5JqKjXSiXfMC4YvK8" passHref>
+                  <div className={styles.linkButton}>
+                    <FontAwesomeIcon icon={faStar} />
+                    <span>Register to the hackathon as a participant!</span>
                   </div>
                 </Link>
               </div>
