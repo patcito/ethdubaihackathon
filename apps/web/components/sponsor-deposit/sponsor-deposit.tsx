@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import useIsApproved from "../../hooks/useIsApproved";
 import Button from "../button";
 import { useSelector } from "react-redux";
@@ -20,6 +20,7 @@ type Props = {};
 
 const SponsorDeposit: FC<Props> = () => {
   const { register, handleSubmit, watch } = useForm();
+  const [decimals, setDecimals] = useState<number>(18);
   const watchForm = watch();
 
   const walletChainId = useSelector(chainId);
@@ -28,7 +29,12 @@ const SponsorDeposit: FC<Props> = () => {
     walletChainId,
     account,
     watchForm.tokenAddress,
-    contractAddresses.hackathon[walletChainId]
+    contractAddresses.hackathon[walletChainId],
+    new BigNumber(
+      new BigNumber(watchForm.amount).times(
+        new BigNumber(10).exponentiatedBy(decimals)
+      )
+    ).toFixed(0)
   );
   const status = useStatus();
 
@@ -45,7 +51,8 @@ const SponsorDeposit: FC<Props> = () => {
         tokenAddress,
         walletChainId
       );
-      const decimals = await tokenContract.methods.decimals().call();
+      const tokenDecimals = await tokenContract.methods.decimals().call();
+      setDecimals(tokenDecimals);
       const encodedAbi = hackathon.methods
         .deposit(
           tokenAddress,

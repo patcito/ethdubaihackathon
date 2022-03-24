@@ -15,7 +15,8 @@ const useIsApproved = (
   networkId: number,
   account: string | boolean,
   tokenAddress: string,
-  spenderAddress: string
+  spenderAddress: string,
+  approveAmount: string | null
 ) => {
   const [status, setStatus] = useState(STATUS_APPROVE_IDLE);
   const [isApproved, setIsApproved] = useState<boolean>();
@@ -31,7 +32,7 @@ const useIsApproved = (
           .allowance(account, spenderAddress)
           .call();
         const allowAmount = new BigNumber(amount);
-        if (allowAmount.isGreaterThan(0)) {
+        if (allowAmount.gt(0) && allowAmount.gte(approveAmount)) {
           setAllowance(allowAmount);
           setIsApproved(true);
         } else {
@@ -43,20 +44,27 @@ const useIsApproved = (
         setStatus(STATUS_APPROVE_IDLE);
       }
     }
-  }, [networkId, account, tokenAddress, spenderAddress]);
+  }, [networkId, account, tokenAddress, spenderAddress, approveAmount]);
 
   useEffect(() => {
     if (networkId && account && tokenAddress && spenderAddress)
       fetchAllowance();
-  }, [networkId, account, tokenAddress, spenderAddress]);
+  }, [
+    networkId,
+    account,
+    tokenAddress,
+    spenderAddress,
+    fetchAllowance,
+    approveAmount,
+  ]);
 
   const handleApprove = async () => {
     if (account) {
-      const approveAmount = new BigNumber(1)
-        .multipliedBy(new BigNumber(2).pow(256))
-        .minus(1);
+      const amount = approveAmount
+        ? approveAmount
+        : new BigNumber(1).multipliedBy(new BigNumber(2).pow(256)).minus(1);
       const encodedAbi = tokenContract.methods
-        .approve(spenderAddress, `0x${approveAmount.toString(16)}`)
+        .approve(spenderAddress, `0x${amount.toString(16)}`)
         .encodeABI();
 
       try {
