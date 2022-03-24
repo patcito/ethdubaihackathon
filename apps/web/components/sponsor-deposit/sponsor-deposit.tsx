@@ -21,7 +21,7 @@ type Props = {};
 const SponsorDeposit: FC<Props> = () => {
   const { register, handleSubmit, watch } = useForm();
   const watchForm = watch();
-
+  const [zapperBalance, setZapperBalance] = React.useState([]);
   const walletChainId = useSelector(chainId);
   const account = useSelector(defaultAccount);
   const approveStatus = useIsApproved(
@@ -37,7 +37,26 @@ const SponsorDeposit: FC<Props> = () => {
     contractAddresses.hackathon[walletChainId],
     walletChainId
   );
+  interface Asset {
+    symbol: string;
+    address: string;
+  }
+  interface Product {
+    assets: Asset[];
+  }
+  interface Balance {
+    products: Product[];
+  }
 
+  React.useEffect(() => {
+    const getBalance = async () => {
+      const data = await fetch(
+        `https://api.zapper.fi/v1/protocols/tokens/balances?api_key=96e0cc51-a62e-42ca-acee-910ea7d2a241&addresses[]=${account}`
+      );
+      const balance: Object = await data.json();
+    };
+    getBalance();
+  });
   const handleDeposit = async (tokenAddress, amount) => {
     if (account) {
       const tokenContract = createContract(
@@ -83,6 +102,12 @@ const SponsorDeposit: FC<Props> = () => {
     <div className={styles.wrapper}>
       <div className={styles.formGroup}>
         <label className={styles.label}>Token</label>
+        <select>
+          <option>Select a Token</option>
+          {zapperBalance?.map((balance) => (
+            <option value={balance.address}>{balance.symbol}</option>
+          ))}
+        </select>
         <input
           {...register("tokenAddress", { required: true })}
           type="text"
