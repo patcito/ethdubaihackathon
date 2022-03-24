@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import useIsApproved from "../../hooks/useIsApproved";
 import Button from "../button";
 import { useSelector } from "react-redux";
@@ -44,15 +44,25 @@ const SponsorDeposit: FC<Props> = () => {
     walletChainId
   );
 
+  useEffect(() => {
+    async function fetchDecimals() {
+      if (Web3.utils.isAddress(watchForm.tokenAddress)) {
+        const tokenContract = createContract(
+          ERC20Abi,
+          watchForm.tokenAddress,
+          walletChainId
+        );
+
+        const tokenDecimals = await tokenContract.methods.decimals().call();
+        setDecimals(tokenDecimals);
+      }
+    }
+
+    fetchDecimals();
+  }, [watchForm.tokenAddress, walletChainId]);
+
   const handleDeposit = async (tokenAddress, amount) => {
-    if (account) {
-      const tokenContract = createContract(
-        ERC20Abi,
-        tokenAddress,
-        walletChainId
-      );
-      const tokenDecimals = await tokenContract.methods.decimals().call();
-      setDecimals(tokenDecimals);
+    if (account && decimals) {
       const encodedAbi = hackathon.methods
         .deposit(
           tokenAddress,

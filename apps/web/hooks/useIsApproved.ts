@@ -64,7 +64,7 @@ const useIsApproved = (
         ? approveAmount
         : new BigNumber(1).multipliedBy(new BigNumber(2).pow(256)).minus(1);
       const encodedAbi = tokenContract.methods
-        .approve(spenderAddress, `0x${amount.toString(16)}`)
+        .approve(spenderAddress, amount)
         .encodeABI();
 
       try {
