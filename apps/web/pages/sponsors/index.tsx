@@ -65,7 +65,10 @@ const SponsorsPage: NextPage = () => {
                 </Link>
               </div>
               <div className={styles.extLinks}>
-                <Link href="https://forms.gle/5JqKjXSiXfMC4YvK8" passHref>
+                <Link
+                  href="https://docs.google.com/document/d/1JdO02UgeUcI0tbk4nvUsswgCJCj-MmM5HADo0PeTsgA/edit"
+                  passHref
+                >
                   <div className={styles.linkButton}>
                     <FontAwesomeIcon icon={faStar} />
                     <span>Hackathon Participant Registration</span>
