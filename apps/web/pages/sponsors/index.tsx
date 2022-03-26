@@ -63,10 +63,12 @@ const SponsorsPage: NextPage = () => {
                     <span>Source Code</span>
                   </div>
                 </Link>
+              </div>
+              <div className={styles.extLinks}>
                 <Link href="https://forms.gle/5JqKjXSiXfMC4YvK8" passHref>
                   <div className={styles.linkButton}>
                     <FontAwesomeIcon icon={faStar} />
-                    <span>Register to the hackathon as a participant!</span>
+                    <span>Hackathon Participant Registration</span>
                   </div>
                 </Link>
               </div>

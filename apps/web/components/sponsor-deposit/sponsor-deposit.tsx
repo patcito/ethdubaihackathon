@@ -33,6 +33,7 @@ type Props = {};
 
 const SponsorDeposit: FC<Props> = () => {
   const { register, handleSubmit, watch, setValue } = useForm();
+  const [decimals, setDecimals] = useState<number>(18);
   const watchForm = watch();
   const [zapperBalances, setZapperBalances] = useState<Product>();
   const [native, setNative] = useState<string>();
@@ -43,6 +44,11 @@ const SponsorDeposit: FC<Props> = () => {
     account,
     watchForm.tokenAddress,
     contractAddresses.hackathon[walletChainId],
+    new BigNumber(
+      new BigNumber(watchForm.amount).times(
+        new BigNumber(10).exponentiatedBy(decimals)
+      )
+    ).toFixed(0),
     native ? true : false
   );
   const status = useStatus();
@@ -52,6 +58,23 @@ const SponsorDeposit: FC<Props> = () => {
     contractAddresses.hackathon[walletChainId],
     walletChainId
   );
+
+  useEffect(() => {
+    async function fetchDecimals() {
+      if (Web3.utils.isAddress(watchForm.tokenAddress)) {
+        const tokenContract = createContract(
+          ERC20Abi,
+          watchForm.tokenAddress,
+          walletChainId
+        );
+
+        const tokenDecimals = await tokenContract.methods.decimals().call();
+        setDecimals(tokenDecimals);
+      }
+    }
+
+    fetchDecimals();
+  }, [watchForm.tokenAddress, walletChainId]);
 
   useEffect(() => {
     async function getBalance() {
@@ -70,13 +93,7 @@ const SponsorDeposit: FC<Props> = () => {
   }, [account]);
 
   const handleDeposit = async (tokenAddress, amount) => {
-    if (account) {
-      const tokenContract = createContract(
-        ERC20Abi,
-        tokenAddress,
-        walletChainId
-      );
-      const decimals = await tokenContract.methods.decimals().call();
+    if (account && decimals) {
       const encodedAbi = hackathon.methods
         .deposit(
           tokenAddress,
