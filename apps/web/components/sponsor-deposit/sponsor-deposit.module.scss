@@ -22,3 +22,16 @@
     color: rgba(255, 255, 255, 0.1);
   }
 }
+
+.select {
+  @apply rounded-lg;
+
+  color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.5rem;
+
+  option {
+    color: #000;
+  }
+}

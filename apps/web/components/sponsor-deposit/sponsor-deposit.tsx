@@ -15,14 +15,28 @@ import { sendTransaction } from "../../utils/transaction";
 import BigNumber from "bignumber.js";
 import { useForm } from "react-hook-form";
 import Web3 from "web3";
+import { formatDecimal } from "../../utils/number";
+
+interface Asset {
+  symbol: string;
+  address: string;
+  balance: number;
+}
+interface Product {
+  assets: Asset[];
+}
+interface Balance {
+  products: Product[];
+}
 
 type Props = {};
 
 const SponsorDeposit: FC<Props> = () => {
-  const { register, handleSubmit, watch } = useForm();
+  const { register, handleSubmit, watch, setValue } = useForm();
   const [decimals, setDecimals] = useState<number>(18);
   const watchForm = watch();
-
+  const [zapperBalances, setZapperBalances] = useState<Product>();
+  const [native, setNative] = useState<string>();
   const walletChainId = useSelector(chainId);
   const account = useSelector(defaultAccount);
   const approveStatus = useIsApproved(
@@ -34,7 +48,8 @@ const SponsorDeposit: FC<Props> = () => {
       new BigNumber(watchForm.amount).times(
         new BigNumber(10).exponentiatedBy(decimals)
       )
-    ).toFixed(0)
+    ).toFixed(0),
+    native ? true : false
   );
   const status = useStatus();
 
@@ -61,6 +76,22 @@ const SponsorDeposit: FC<Props> = () => {
     fetchDecimals();
   }, [watchForm.tokenAddress, walletChainId]);
 
+  useEffect(() => {
+    async function getBalance() {
+      const data = await fetch(
+        `https://api.zapper.fi/v1/protocols/tokens/balances?api_key=96e0cc51-a62e-42ca-acee-910ea7d2a241&addresses[]=${account}`
+      );
+      const balance: Object = await data.json();
+      const balances = balance[String(account).toLowerCase()] || [];
+
+      setZapperBalances(
+        balances.products.length > 0 ? balances.products[0] : []
+      );
+    }
+
+    if (account) getBalance();
+  }, [account]);
+
   const handleDeposit = async (tokenAddress, amount) => {
     if (account && decimals) {
       const encodedAbi = hackathon.methods
@@ -80,7 +111,7 @@ const SponsorDeposit: FC<Props> = () => {
           account,
           hackathon.options.address,
           encodedAbi,
-          "",
+          native ? `0x${new BigNumber(amount).times(1e18).toString(16)}` : "",
           function (hash) {
             status.setSending();
           }
@@ -96,16 +127,31 @@ const SponsorDeposit: FC<Props> = () => {
   const onSubmit = ({ tokenAddress, amount }) =>
     handleDeposit(tokenAddress, amount);
 
+  const onTokenChange = async (value) => {
+    const address = value.target.value;
+    setNative(null);
+    if (address === "0x0000000000000000000000000000000000000000") {
+      const nativeAddress = await hackathon.methods.native().call();
+      setNative(nativeAddress);
+      setValue("tokenAddress", nativeAddress);
+    } else {
+      if (Web3.utils.isAddress(address)) setValue("tokenAddress", address);
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.formGroup}>
         <label className={styles.label}>Token</label>
-        <input
-          {...register("tokenAddress", { required: true })}
-          type="text"
-          className={styles.input}
-          placeholder="0x0000000000000000000000000000000000000000"
-        />
+        <select className={styles.select} onChange={onTokenChange}>
+          <option>Select a Token</option>
+          {zapperBalances &&
+            zapperBalances.assets.map((balance, i) => (
+              <option key={`balance-${i}`} value={balance.address}>
+                {formatDecimal(balance.balance, 0, 4, 4)} {balance.symbol}
+              </option>
+            ))}
+        </select>
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Amount</label>
