@@ -22,8 +22,8 @@ const Footer: FC<Props> = () => {
           @patcito
         </Link>{" "}
         and the amazing{" "}
-        <Link href="https://twitter.com/financefeeder" passHref>
-          @financefeeder
+        <Link href="https://twitter.com/feederfinance" passHref>
+          @feederfinance
         </Link>{" "}
         with contribs by the great{" "}
         <Link href="https://twitter.com/qdqd___" passHref>
