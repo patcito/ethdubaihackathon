@@ -125,7 +125,7 @@ contract Hackathon is ReentrancyGuard {
     {
         uint256 _before = tokenBalance(_token);
 
-        if (_token == native) {
+        if (_token == native && msg.value > 0) {
             IWETH(native).deposit{value: msg.value}();
         } else {
             IERC20(_token).safeTransferFrom(
