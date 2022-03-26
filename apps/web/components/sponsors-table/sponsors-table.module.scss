@@ -35,8 +35,14 @@
   }
 
   .verified {
-    @apply mr-2;
+    @apply mr-2 inline-block;
 
     color: #00ffb2;
+
+    svg {
+      margin-top: 0.25rem;
+      width: 18px;
+      height: 18px;
+    }
   }
 }
