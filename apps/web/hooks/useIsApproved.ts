@@ -15,7 +15,8 @@ const useIsApproved = (
   networkId: number,
   account: string | boolean,
   tokenAddress: string,
-  spenderAddress: string
+  spenderAddress: string,
+  isNative: boolean
 ) => {
   const [status, setStatus] = useState(STATUS_APPROVE_IDLE);
   const [isApproved, setIsApproved] = useState<boolean>();
@@ -23,6 +24,10 @@ const useIsApproved = (
   const tokenContract = createContract(ERC20Abi, tokenAddress, networkId);
 
   const fetchAllowance = useCallback(async () => {
+    if (isNative) {
+      setIsApproved(true);
+      return;
+    }
     if (!Web3.utils.isAddress(tokenAddress)) return;
     if (networkId && account && tokenAddress && spenderAddress) {
       try {
@@ -43,12 +48,14 @@ const useIsApproved = (
         setStatus(STATUS_APPROVE_IDLE);
       }
     }
-  }, [networkId, account, tokenAddress, spenderAddress]);
+  }, [networkId, account, tokenAddress, spenderAddress, isNative]);
 
   useEffect(() => {
-    if (networkId && account && tokenAddress && spenderAddress)
+    if (networkId && account && tokenAddress && spenderAddress) {
+      setIsApproved(false);
       fetchAllowance();
-  }, [networkId, account, tokenAddress, spenderAddress]);
+    }
+  }, [networkId, account, tokenAddress, spenderAddress, isNative]);
 
   const handleApprove = async () => {
     if (account) {
