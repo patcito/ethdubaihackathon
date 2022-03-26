@@ -46,7 +46,7 @@ const SponsorsPage: NextPage = () => {
               </p>
               <div className={styles.extLinks}>
                 <Link
-                  href="https://etherscan.io/address/0xC13DBa0CE613008eF43D205C455de6E9fbc1C77f"
+                  href="https://etherscan.io/address/0x89b9c96d1b0024e929bfc76f898a4478a527a88c"
                   passHref
                 >
                   <div className={styles.linkButton}>
