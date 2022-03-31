@@ -12,8 +12,11 @@ import { faBookmark, faStar } from "@fortawesome/free-regular-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Footer from "../../components/footer";
+import { useSelector } from "react-redux";
+import { chainId } from "../../components/wallet-connect/slice/selectors";
 
 const SponsorsPage: NextPage = () => {
+  const walletChainId = useSelector(chainId);
   return (
     <div className={styles.wrapper}>
       <div
@@ -81,7 +84,7 @@ const SponsorsPage: NextPage = () => {
             title="Rewards by Sponsors"
             className="animate__animated animate__fadeInUp"
           >
-            <SponsorsTable />
+            <SponsorsTable walletChainId={walletChainId} />
           </Card>
         </div>
         <div className={styles.rightCol}>
