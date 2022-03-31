@@ -26,6 +26,7 @@ const useSponsorBalances = ({ filter = (data: Balances[]) => data } = {}) => {
 
   useEffect(() => {
     async function fetchBalances() {
+      if (walletChainId !== 1 && walletChainId !== 250) return;
       const client = graphClient(walletChainId);
       if (!client) return;
 
@@ -33,7 +34,7 @@ const useSponsorBalances = ({ filter = (data: Balances[]) => data } = {}) => {
         query: GET_SPONSOR_BALANCES,
       });
 
-      if (filter) {
+      if (data && filter) {
         data = filter(data.sponsorBalances);
       }
 
